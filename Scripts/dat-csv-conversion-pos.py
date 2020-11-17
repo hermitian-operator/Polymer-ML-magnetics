@@ -6,7 +6,7 @@
 
 #You will need to move and slightly tweek the numbers in this script manually
 #depending on the bin-range you're in to process the data correctly.
-#The program will only work if it is within the /HOME/Bin_#-# directory (In which HOME can be path of your choosing...)
+#The program will only work if it is within the /HOME/Bin_#-# directory (In which HOME can be a path of your choosing...)
 #The program will attempt to access the bin directories through the /HOME/Bin_#-#/Bin000## path.
 #The file produced in this script will be written within the /HOME/Bin_#-# path.
 
@@ -33,43 +33,56 @@ import os
 myPath = "/Users/quantum_kitty/Documents/ML-monomer-programs/Bins_0-9/"
 
 #Chose the desired bin to run through here... the value should always be a string number...
-BinRun = "9"
+BinRun = "0"+"5"
+
 
 #store all of the files in a list from a particular directory
-file_path = os.listdir(myPath+"Bin0000"+BinRun)
+da_file_path = os.listdir(myPath+"Bin000"+BinRun)
 
-#Though "file_path" reads and stores the files, the working directory is still the home directory. Change this with the line below.
-os.chdir(myPath+"Bin0000"+BinRun)
+#To keep the number of data files the same when processing in CoLab,
+#I'm going to create a list that limits the number of files wirtten to the output file.
+#Numfiles is the limit imposed that should be changable later.
+file_path = []
+Numfiles = 800
+for k in range(Numfiles):
+    file_path.append(da_file_path[k])
+
+
 
 #choose outname, the "shift-0 component will determine if we translate/rotate the data to produce more "fake" data for the machine learning algorithm.
-outname =  myPath + "Bin_0000" + BinRun + "-shift-0" + "-pos" + ".csv"
+outname =  myPath + "Bin_000" + BinRun + "-shift-0" + "-pos" + ".csv"
+
 
 Myfile = open(outname,"a")
 
-
 for j in file_path:
+
+    #initialize the relevent lists so that we can append the desired data.
+    position = []
+    #magmoment = []
+
+    #Though "file_path" reads and stores the files, the working directory is still the home directory. Change this with the line below.
+    os.chdir(myPath+"Bin000"+BinRun)
     with open( j, 'r') as reader:
-        for line in reader.readlines():        #initialize job loop (this one should go on for a while...) #before linesplit, each index is a line in the input file.
+        #I created an extra list to make the programming easier, to hell with your ultra opimized code.
+        trueline =[]
+        for line in reader.readlines():        #initialize job loop (this one should go on for a while...) #before linesplit, each index is a line in the input file
             line = line.strip()
             line = line.split() #this beaks up each number in a given line into individual elements determined by the list 'line'
 
             #Just in case there are float conversion issues down the line, I'm just going to do it here.
             for i in range((len(line))):      #Right now python interprets the incoming data files as string elements, iterate through each element and convert it to a float.
-                line[i] = float(line[i])
+                trueline.append(float(line[i]))
 
-            #initialize the relevent lists so that
-            position = []
-         #    magmoment = []
-            for i in range((len(line))/6):
-                #append coordinate data only to the position list.
-                position.append(line[i])
-                position.append(line[i+1])
-                position.append(line[i+2])
-                #same idea with the magnetic moment.
-            #    magmoment.append(line[i+3])
-            #    magmoment.append(line[i+4])
-            #    magmoment.append(line[i+5])
-            for i in position:
-                Myfile.write(str(i)+",")
-    Myfile.write("\n")
+
+        for i in range(len(trueline)/6):
+            position.append(trueline[(6*i)])
+            position.append(trueline[(6*i)+1])
+            position.append(trueline[(6*i)+2])
+
+        for i in range(len(position)-1):
+            Myfile.write(str(position[i])+",")
+        Myfile.write(str(position[-1])+"\n")
+
+
 Myfile.close()
